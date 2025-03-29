@@ -23,7 +23,9 @@ class Phone(Field):
 class Birthday(Field):
     def __init__(self, value):
         try:
-            self.value = datetime.datetime.strptime(value, "%d.%m.%Y")
+            birth_date = datetime.datetime.strptime(value, "%d.%m.%Y")
+            current_year = datetime.datetime.now().year
+            self.value = birth_date.replace(year=current_year)
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
 
@@ -75,7 +77,12 @@ class AddressBook(UserDict):
 
         for record in self.data.values():
             if record.birthday:
-                if today <= record.birthday.value <= week_later:
-                    upcoming_birthdays.append(f"{record.name.value}: {record.birthday.value.strftime('%d.%m.%Y')}")
+                birthday_this_year = record.birthday.value
+
+                if birthday_this_year < today:
+                    birthday_this_year = birthday_this_year.replace(year=today.year + 1)
+
+                if today <= birthday_this_year <= week_later:
+                    upcoming_birthdays.append(f"{record.name.value}: {birthday_this_year.strftime('%d.%m.%Y')}")
         
         return upcoming_birthdays if upcoming_birthdays else "No birthdays in the next week."
